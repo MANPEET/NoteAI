@@ -4,9 +4,7 @@ import { PrismaClient } from "@prisma/client"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-
-
-const prisma = new PrismaClient()
+import { prisma } from "./prisma"
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -46,30 +44,34 @@ export const authOptions: NextAuthOptions = {
             }
         })
     ],
+
+    session: {
+        strategy: "jwt"
+    },
+
     callbacks: {
         async jwt({token, user}){
 
             if(user){
-                token.id = user.id,
+                token.id = user.id
                 token.plan = (user as any).plan || "free"
             }
 
             return token
         },
 
-        async session({session, user}) {
+        async session({session, token}) {
             if(session.user) {
-                session.user.id = user.id;
-                session.user.plan = (user as any).plan || "free"
+                session.user.id = token.id as string
+                session.user.plan = token.plan as "free" | "pro"  
             }
 
             return session
         }
     },
 
-    session: {
-        strategy: "jwt"
-    },
+    secret: process.env.NEXTAUTH_SECRET,
+
 
     pages: {
         signIn: "/auth/login",
