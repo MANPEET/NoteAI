@@ -37,7 +37,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-black bg-[radial-gradient(rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px]">
+    <div className="bg-black bg-[radial-gradient(rgba(255,255,255,0.1)_1px,transparent_1px)] ">
       <div className="min-h-screen flex items-center justify-center ">
         <div className=" w-full max-w-md">
           <h1 className="text-5xl font-bold text-green-400 mb-1 text-center font-Geist">Welcome Back</h1>

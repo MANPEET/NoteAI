@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { groq } from "@/lib/groq";
 
 import { prisma } from "@/lib/prisma";
+import { canCreateSummary } from "@/lib/usage";
 
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
@@ -39,12 +40,18 @@ export async function POST(req: Request) {
             )     
         }
 
-        if (user.plan === "free" && user.summariesUsed >= 5) {
+       const usage = await canCreateSummary(user.id, user.plan)
+
+       if(!usage.allowed){
+            const resetMsg = usage.resetDate 
+            ? `Next slot opens on : ${usage.resetDate.toLocaleDateString("en-US", {month : "short", day: "numeric"})}`
+            : ""
+
             return NextResponse.json(
-                { error: "You have used all 5 free summaries this month. Upgrade to Pro for unlimited summaries." },
-                { status: 403 }
+                { error: `You have used all ${usage.limit} free summaries in the last 30 days.${resetMsg} Upgrade to Pro for unlimited.` },
+                {status: 403 }
             )
-        }
+       }
 
         const prompt = `
             Analyze this meeting transcript and return ONLY this exact JSON structure, nothing else:
@@ -112,12 +119,7 @@ export async function POST(req: Request) {
             }
         })
 
-        await prisma.user.update({
-            where: {id : user.id},
-            data: {
-                summariesUsed : {increment : 1}
-            }
-        })
+        
 
         return NextResponse.json({summary} , {status : 200})
     } 

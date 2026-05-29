@@ -51,28 +51,8 @@ export default function SummarizePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Navbar */}
-      <nav className="border-b border-white/8 px-8 py-4 flex justify-between items-center">
-        <span className="font-bold text-lg tracking-tight">
-          Note<span className="text-green-500">AI</span>
-        </span>
-        <div className="flex items-center gap-4">
-          <span className="text-zinc-400 text-sm">{session?.user?.email}</span>
-          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
-            isPro
-              ? "bg-green-500/10 text-green-400 border border-green-500/20"
-              : "bg-zinc-800 text-zinc-400 border border-white/8"
-          }`}>
-            {isPro ? "Pro" : "Free"}
-          </span>
-          <a href="/dashboard" className="text-zinc-400 hover:text-white text-sm transition-colors">
-            Dashboard
-          </a>
-        </div>
-      </nav>
-
-      <div className="max-w-2xl mx-auto px-6 py-14">
+    <div className="min-h-screen bg-black text-white w-full rounded-xl my-5">
+      <div className=" px-6 py-14">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">New Summary</h1>
           <p className="text-zinc-400">Paste your transcript and let AI extract everything.</p>
@@ -80,7 +60,7 @@ export default function SummarizePage() {
 
         {/* Free tier notice */}
         {!isPro && (
-          <div className="bg-yellow-500/5 border border-yellow-500/15 rounded-xl p-4 mb-6 flex gap-3">
+          <div className="bg-yellow-500/5 border border-yellow-500/15 rounded-xl p-4 mb-6 flex gap-3 ">
             <span className="text-yellow-400">⚡</span>
             <p className="text-yellow-400/90 text-sm">
               <strong>Free plan:</strong> 2,000 character limit · 5 summaries/month.{" "}
