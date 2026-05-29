@@ -173,36 +173,8 @@ export function AppSidebar({ user, usageCount, resetDate, recentSummaries, ...pr
           )}
         </SidebarGroup>
 
-        {/* Recent Summaries */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm">Recent Summaries</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {recentSummaries.length === 0 ? (
-              <p className="text-[11px] text-zinc-600 px-3 py-2">No summaries yet</p>
-            ) : (
-              <SidebarMenu>
-                {recentSummaries.map(summary => (
-                  <SidebarMenuItem
-                    key={summary.id}
-                    onClick={() => router.push(`/summary/${summary.id}`)}
-                  >
-                    <SidebarMenuButton className="flex items-start gap-2 cursor-pointer h-auto py-2">
-                      <FileText size={14} className="text-zinc-500 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-medium text-zinc-300 truncate leading-snug">
-                          {summary.title ?? "Untitled Meeting"}
-                        </p>
-                        <p className="text-[11px] text-zinc-600 mt-0.5">
-                          {timeAgo(summary.createdAt)}
-                        </p>
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
+      
+        
 
       </SidebarContent>
 
