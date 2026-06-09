@@ -1,6 +1,6 @@
 "use client"
 
-import { DiamondIcon, Search } from "lucide-react"
+import { ArrowRight, DiamondIcon, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -161,7 +161,7 @@ export default function DashboardClient({
                         onClick={() => setFilter(f)}
                         className={`py-2.5 px-3.5 rounded-lg text-xs font-semibold capitalize transition-all border cursor-pointer ${
                         filter === f
-                            ? "bg-green-500/[0.08] text-green-400 border-green-500/20"
+                            ? "bg-green-500/8 text-green-400 border-green-500/20"
                             : "bg-zinc-950 text-zinc-500 border-white/[0.07] hover:text-white"
                         }`}
                     >
@@ -173,10 +173,11 @@ export default function DashboardClient({
         
 
         {/* List header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-7">
           <h3 className="text-sm font-semibold">Recent Summaries</h3>
-          <button className="text-xs text-zinc-600 hover:text-white transition-colors">
-            View all →
+          <button className="text-[12px] text-white/60 hover:text-white transition-colors flex items-center gap-1.5">
+            View all 
+            <ArrowRight size={12} className="text-white/60 group-hover:text-white transition-colors" />
           </button>
         </div>
 
@@ -226,13 +227,16 @@ export default function DashboardClient({
                   className="group bg-[#1d1d1d] border border-white/[0.07] rounded-2xl p-4.25 text-left hover:border-green-500/20 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] relative overflow-hidden"
                 >
                   {/* Hover glow */}
-                  <div className="absolute inset-0 rounded-2xl bg-linear-to-b from-green-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl bg-linear-to-b from-green-500/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                   {/* Card header */}
                   <div className="flex items-start justify-between mb-3">
-                    <div className="w-[8.5] h-[8.5] rounded-[9px] bg-zinc-900 border border-white/[0.07] flex items-center justify-center text-sm shrink-0 group-hover:border-green-500/15 transition-colors">
-                      📋
-                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-[13.5px] font-semibold text-white leading-snug mb-1.5 line-clamp-2">
+                      {summary.title}
+                    </h3>
+                    
                     <div className="flex items-center gap-1.5">
                       <div className={`w-1.5 h-1.5 rounded-full ${sentiment.dot}`} />
                       <span className={`text-[11px] font-semibold ${sentiment.text}`}>
@@ -241,10 +245,7 @@ export default function DashboardClient({
                     </div>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-[13.5px] font-semibold text-white leading-snug mb-1.5 line-clamp-2">
-                    {summary.title}
-                  </h3>
+                  
 
                   {/* Preview */}
                   <p className="text-xs text-zinc-600 leading-relaxed mb-3 line-clamp-2">
@@ -257,13 +258,13 @@ export default function DashboardClient({
                       {result.topics.slice(0, 3).map(t => (
                         <span
                           key={t}
-                          className="text-[11px] px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-500 border border-white/[0.05]"
+                          className="text-[11px] px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-500 border border-white/5"
                         >
                           {t}
                         </span>
                       ))}
                       {result.topics.length > 3 && (
-                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-600 border border-white/[0.05]">
+                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-600 border border-white/5">
                           +{result.topics.length - 3}
                         </span>
                       )}
@@ -271,7 +272,7 @@ export default function DashboardClient({
                   )}
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
+                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
                     <div className="flex items-center gap-2.5">
                       {result.participants?.length > 0 && (
                         <div className="flex -space-x-1.5">
@@ -300,10 +301,7 @@ export default function DashboardClient({
                     </span>
                   </div>
 
-                  {/* Arrow on hover */}
-                  <div className="absolute bottom-3.5 right-3.5 w-6 h-6 rounded-[7px] bg-green-500 flex items-center justify-center text-[11px] text-black opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all">
-                    →
-                  </div>
+                  
                 </button>
               )
             })}

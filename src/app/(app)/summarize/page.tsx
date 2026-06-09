@@ -49,6 +49,7 @@ export default function SummarizePage() {
       }
 
       router.push(`/summary/${data.summary.id}`)
+      router.refresh()
     } catch (err) {
       setError("Something went wrong. Please try again.")
     } finally {
@@ -68,7 +69,7 @@ export default function SummarizePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
-          <h1 className="text-5xl font-semibold tracking-tight bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent mb-3">
+          <h1 className="text-5xl font-semibold tracking-tight bg-linear-to-b from-white to-zinc-500 bg-clip-text text-transparent mb-3">
             New Summary
           </h1>
 
@@ -85,7 +86,7 @@ export default function SummarizePage() {
             animate={{ opacity: 1 }}
             className="relative overflow-hidden rounded-2xl border border-yellow-500/20 bg-yellow-500/5 backdrop-blur-xl p-5 mb-8"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-transparent opacity-40" />
+            <div className="absolute inset-0 bg-linear-to-r from-yellow-500/10 to-transparent opacity-40" />
 
             <div className="relative flex items-start gap-4">
               <div className="h-10 w-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
@@ -140,7 +141,7 @@ export default function SummarizePage() {
           layout
           className="relative"
         >
-          <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-green-500/20 via-emerald-500/20 to-teal-500/20 blur-sm opacity-70" />
+          <div className="absolute -inset-[px] rounded-3xl bg-linear-to-r from-green-500/20 via-emerald-500/20 to-teal-500/20 blur-sm opacity-70" />
 
           <textarea
             value={transcript}
@@ -188,7 +189,7 @@ export default function SummarizePage() {
         )}
 
         {/* Tips */}
-        <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6">
+        <div className="mt-6 rounded-3xl border border-white/10 bg-white/3 backdrop-blur-xl p-6">
 
           <div className="flex items-center gap-2 mb-6">
             <Sparkles className="h-4 w-4 text-green-400" />
@@ -260,7 +261,7 @@ export default function SummarizePage() {
             w-full
             overflow-hidden
             rounded-3xl
-            bg-gradient-to-r
+            bg-linear-to-r
             from-green-400
             to-emerald-500
             px-6
@@ -274,7 +275,7 @@ export default function SummarizePage() {
           "
         >
 
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+          <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
           <div className="relative flex items-center justify-center gap-2">
 
