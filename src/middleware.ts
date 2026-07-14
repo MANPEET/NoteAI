@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register")
-  const isProtectedPage = pathname.startsWith("/dashboard")
+  const isProtectedPage = pathname.startsWith("/*")
 
   if (token && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", req.url))
