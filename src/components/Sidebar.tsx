@@ -1,9 +1,8 @@
 "use client"
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
-import { DiamondPlus, LayoutDashboard, Star, FileText } from "lucide-react";
-import { signOut } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { DiamondPlus, LayoutDashboard, Star, LogOut, Kanban } from "lucide-react"
+import { signOut } from "next-auth/react"
+import { usePathname, useRouter } from "next/navigation"
 
 type SidebarUser = {
   id: string
@@ -18,7 +17,7 @@ type RecentSummary = {
   title: string | null
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+interface AppSidebarProps {
   user: SidebarUser
   usageCount: number
   resetDate: Date | null
@@ -27,17 +26,9 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 const FREE_LIMIT = 5
 
-function timeAgo(date: Date) {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-}
-
-export function AppSidebar({ user, usageCount, resetDate, recentSummaries, ...props }: AppSidebarProps) {
+export function AppSidebar({ user, usageCount, resetDate, recentSummaries }: AppSidebarProps) {
   const router = useRouter()
-  const pathName = usePathname()
+  const pathname = usePathname()
 
   const isPro = user?.plan === "pro"
   const isAtLimit = usageCount >= FREE_LIMIT
@@ -51,70 +42,70 @@ export function AppSidebar({ user, usageCount, resetDate, recentSummaries, ...pr
   const navItems = [
     { label: "Dashboard", icon: <LayoutDashboard size={16} />, href: "/dashboard" },
     { label: "New Summary", icon: <Star size={16} />, href: "/summarize" },
+    { label: "Boards", icon: <Kanban size={16} />, href: "/boards" },
   ]
 
   return (
-    <Sidebar collapsible="offcanvas" {...props} className="h-dvh">
+    <aside className="flex flex-col h-screen sticky top-0 w-64 text-sidebar-foreground shrink-0 overflow-hidden">
 
       {/* Logo */}
-      <SidebarHeader>
+      <div className="p-4 pb-2">
         <button className="p-1.5 text-left">
           <span className="font-bold text-[17px] tracking-tight">
             Note<span className="text-green-500">AI</span>
           </span>
         </button>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent>
+      {/* Main content */}
+      <div className="flex flex-col flex-1 p-4 gap-4">
 
-        {/* Main nav */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm">Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map(item => (
-                <SidebarMenuItem key={item.href} onClick={() => router.push(item.href)}>
-                  <SidebarMenuButton
-                    className={`flex items-center gap-2 font-medium text-sm cursor-pointer ${
-                      item.href === pathName
-                        ? "bg-green-500/[0.08] text-green-400"
-                        : ""
-                    }`}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Menu */}
+        <div>
+          <p className="px-2 pb-1 text-xs font-medium text-white/40 uppercase tracking-wide">Menu</p>
+          <ul className="space-y-0.5">
+            {navItems.map(item => (
+              <li key={item.href}>
+                <button
+                  onClick={() => router.push(item.href)}
+                  className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    item.href === pathname
+                      ? " text-green-400"
+                      : "text-white/70 hover:bg-green-400/40"
+                  }`}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Account */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm">Account</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem onClick={() => router.push("/pricing")}>
-              <SidebarMenuButton className="flex items-center gap-2 font-medium text-sm cursor-pointer">
+        <div>
+          <p className="px-2 pb-1 text-xs font-medium text-white/40 uppercase tracking-wide">Account</p>
+          <ul className="space-y-0.5">
+            <li>
+              <button
+                onClick={() => router.push("/pricing")}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm font-medium text-white/70 hover:bg-green-400/40 hover:text-white transition-colors cursor-pointer"
+              >
                 <DiamondPlus size={16} />
                 {isPro ? "Manage Plan" : "Upgrade to Pro"}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+              </button>
+            </li>
+          </ul>
 
-          {/* Usage bar — free only */}
+          {/* Usage card (free users only) */}
           {!isPro && (
-            <div className={`rounded-xl p-3.5 border  mt-4 transition-colors ${
+            <div className={`rounded-xl p-3.5 border mt-3 transition-colors ${
               isAtLimit
                 ? "bg-red-500/5 border-red-500/20"
                 : "bg-zinc-900 border-zinc-800"
             }`}>
-
-              {/* Header */}
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-zinc-400 font-medium">
-                  Usage (last 30 days)
-                </span>
+                <span className="text-[11px] text-zinc-400 font-medium">Usage (last 30 days)</span>
                 <span className={`text-[11px] font-mono font-semibold ${
                   isAtLimit ? "text-red-400" : "text-zinc-500"
                 }`}>
@@ -122,41 +113,33 @@ export function AppSidebar({ user, usageCount, resetDate, recentSummaries, ...pr
                 </span>
               </div>
 
-              {/* Progress bar */}
               <div className="w-full h-1.5 rounded-full bg-zinc-800 mb-2">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     isAtLimit
                       ? "bg-red-500"
                       : usagePercent >= 80
-                      ? "bg-gradient-to-r from-yellow-600 to-yellow-400"
-                      : "bg-gradient-to-r from-green-600 to-green-400"
+                      ? "bg-linear-to-r from-yellow-600 to-yellow-400"
+                      : "bg-linear-to-r from-green-600 to-green-400"
                   }`}
                   style={{ width: `${usagePercent}%` }}
                 />
               </div>
 
               {isAtLimit ? (
-                // 5/5 — locked out, show when next slot opens
                 <p className="text-[11px] text-yellow-500/90">
                   Next slot opens{" "}
                   <span className="font-semibold">
                     {resetDate
-                      ? new Date(resetDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "soon"
-                    }
+                      ? new Date(resetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                      : "soon"}
                   </span>
                 </p>
               ) : usageCount === 0 ? (
-                
                 <p className="text-[11px] text-zinc-600">
                   <span className="text-zinc-400 font-medium">5</span> summaries available
                 </p>
               ) : (
-                
                 <p className="text-[11px] text-zinc-600">
                   <span className="text-zinc-400 font-medium">{remaining}</span>{" "}
                   {remaining === 1 ? "summary" : "summaries"} remaining
@@ -171,39 +154,30 @@ export function AppSidebar({ user, usageCount, resetDate, recentSummaries, ...pr
               </button>
             </div>
           )}
-        </SidebarGroup>
+        </div>
 
-      
-        
-
-      </SidebarContent>
+      </div>
 
       {/* User footer */}
-      <SidebarFooter>
-        <div className="px-3 py-3 border-t border-white/[0.07]">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-900 border border-zinc-800">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-600 to-green-400 flex items-center justify-center text-[11px] font-bold text-black flex-shrink-0">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-white truncate">
-                {user?.name ?? "User"}
-              </p>
-              <p className="text-[11px] text-zinc-500 truncate">
-                {user?.email}
-              </p>
-            </div>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              title="Sign out"
-              className="text-zinc-600 hover:text-zinc-300 transition-colors text-sm flex-shrink-0"
-            >
-              ⇥
-            </button>
+      <div className="px-8 py-4 border-t border-white/[0.07]">
+        <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-zinc-900 border border-zinc-800">
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-green-600 to-green-400 flex items-center justify-center text-[11px] font-bold text-black shrink-0">
+            {initials}
           </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-semibold text-white truncate">{user?.name ?? "User"}</p>
+            <p className="text-[11px] text-zinc-500 truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            title="Sign out"
+            className="text-zinc-600 hover:text-zinc-300 transition-colors shrink-0"
+          >
+            <LogOut size={14} />
+          </button>
         </div>
-      </SidebarFooter>
+      </div>
 
-    </Sidebar>
+    </aside>
   )
 }

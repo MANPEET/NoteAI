@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { signIn, useSession } from "next-auth/react"
+import { toast } from "sonner"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -27,10 +28,11 @@ export default function RegisterPage() {
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error)
+      toast.error(data.error)
       setLoading(false)
     } else {
-      router.push("/login?registered=true")
+      toast.success(`OTP sent to ${email}`)
+      router.push(`/verify-otp?email=${encodeURIComponent(email)}`)
     }
   }
 
@@ -44,9 +46,7 @@ export default function RegisterPage() {
             
 
             <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-                <p className="text-red-400 text-sm text-center">{error}</p>
-            )}
+            
 
             <Button
                     onClick={() => signIn("google", { callbackUrl: "/dashboard" })}

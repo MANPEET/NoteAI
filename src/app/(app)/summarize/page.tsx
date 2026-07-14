@@ -12,21 +12,23 @@ import {
   Video,
   Users
 } from "lucide-react"
+import { useUser } from "@/components/providers/user-provider"
 
 const FREE_CHAR_LIMIT = 2000
 const PRO_CHAR_LIMIT = 20000
 
 export default function SummarizePage() {
-  const { data: session } = useSession()
+  const {plan} = useUser()
   const router = useRouter()
+
 
   const [transcript, setTranscript] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const isPro = session?.user?.plan === "pro"
+  const isPro = plan === "pro"
   const charLimit = isPro ? PRO_CHAR_LIMIT : FREE_CHAR_LIMIT
-  const isOverLimit = transcript.length > charLimit
+  const isOverLimit = transcript.trim.length > charLimit
 
   async function handleSubmit() {
     if (!transcript.trim() || isOverLimit) return
@@ -131,7 +133,13 @@ export default function SummarizePage() {
               }
             `}
           >
-            {transcript.length.toLocaleString()} /{" "}
+            {transcript
+              .split("/n")
+              .filter(line => line.trim())
+              .join('/n')
+              .length
+              .toLocaleString()
+            } /{" "}
             {charLimit.toLocaleString()}
           </div>
         </div>

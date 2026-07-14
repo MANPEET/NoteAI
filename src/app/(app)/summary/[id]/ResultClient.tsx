@@ -4,11 +4,14 @@ import { AlertTriangle, ArrowDown, ArrowLeft, Calendar, Check, ChevronRight, Dow
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { jsPDF } from "jspdf";
+import { useUser } from "@/components/providers/user-provider";
+import ChatDrawer from "./ChatDrawer";
+import GenerateBoardCard from "./GenerateBoardCard";
 
 
 interface ActionItem {
     task: string;
-    owner: string | null;
+    owners: string[] | [];
     deadline: string | null;
 }
 
@@ -32,14 +35,22 @@ interface Summary {
 
 interface Props {
   summary: Summary
-  plan: "free" | "pro"
 }
 
-export default function ResultClient({summary,plan} : Props){
+interface ChatMessage{
+    role: "user" | "assistant"
+    content: string
+}
+
+export default function ResultClient({summary} : Props){
     const result = summary.result as SummaryResult;
     const router = useRouter();
     const [copied, setCopied] = useState<Boolean>(false);
     const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
+    const [chatOpen, setChatOpen] = useState(false)
+    const [messages, setMessages] = useState<ChatMessage[]>([])
+
+    const {plan} =  useUser();
 
     const isPro = plan === "pro";
     const [downloading, setDownloading] = useState(false);
@@ -218,8 +229,7 @@ export default function ResultClient({summary,plan} : Props){
                     y += taskLines.length * 10 * 0.3528 * 1.4;
 
                     const meta: string[] = [];
-
-                    if (item.owner) meta.push(`Owner: ${item.owner}`);
+                    if (item.owners?.length > 0) meta.push(`Owner: ${item.owners.join(", ")}`);
                     if (item.deadline) meta.push(`Due: ${item.deadline}`);
 
                     if (meta.length) {
@@ -315,12 +325,12 @@ export default function ResultClient({summary,plan} : Props){
     }
 
     return (
-        <div className="flex flex-col flex-1 overflow-y-auto m-5 rounded-2xl bg-[#09090B]">
+        <div className={`flex ${chatOpen && "h-[calc(100vh-2.5rem)]"} m-5 rounded-2xl bg-[#09090B] overflow-hidden`}>
 
-            <div className="flex flex-col flex-1 overflow-hidden">
+            <div className={`flex flex-col flex-1 min-w-0 h-full ml-5 overflow-y-auto ${chatOpen  && "chat-scroll"}`}>
                 
                 {/* Header */}
-                <div className="px-4 my-4 h-14.25 flex items-center justify-between border-b border-white/[0.07] shrink-0">
+                <div className="px-4 my-4 h-14.25 flex items-center justify-between border-b border-white/[0.07] shrink-0 ">
                     <div>
                         <h2 className = "text-base font-medium tracking-tight text-white ">{result.title}</h2>
                         <p className="text-[11px] text-white/60 mt-0.5">
@@ -367,10 +377,10 @@ export default function ResultClient({summary,plan} : Props){
                         )}
 
                         <button
-                            onClick={() => router.push("/summarize")}
+                            onClick={() => setChatOpen(o => !o)}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-black text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                             >
-                                ✦ New Summary
+                                ✦ Chat with AI
                         </button>
                     </div>
                 </div>
@@ -424,20 +434,25 @@ export default function ResultClient({summary,plan} : Props){
                                     </div>
 
                                     <div>
-                                            <p className={`text-sm font-medium transition-colors ${checkedItems.has(i) ? "line-through text-zinc-600" : "text-white"}`}>
+                                        <p className={`text-sm font-medium transition-colors ${checkedItems.has(i) ? "line-through text-zinc-600" : "text-white"}`}>
                                             {item.task}
                                         </p>
                                         <div className="flex gap-3 mt-1.5">
-                                            {item.owner && (
-                                                <span className="flex items-center gap-1 text-sm text-white/60">
-                                                    <User size={12} /> {item.owner}
-                                                </span>
+                                            {item.owners?.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {item.owners.map((owner: string) => (
+                                                        <span key={owner} className="flex items-center gap-1.5 text-[11px] px-2 py-2 rounded-lg bg-green-500/8 border border-green-500/15 text-green-400 font-medium">
+                                                            {owner}
+                                                        
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             )}
                                             {item.deadline && (
                                                 <span className="flex items-center gap-1 text-sm text-white/60">
                                                     <Calendar size={12} /> {item.deadline}
                                                 </span>
-                                                )}
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -474,54 +489,68 @@ export default function ResultClient({summary,plan} : Props){
                     </Section>
                 )}
 
-                <div className="m-8 bg-zinc-900/60 border border-white/[0.07] rounded-2xl p-5 flex items-center gap-4 justify-between text-sm text-white/60">
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-green-500/8 border border-green-500/15 flex items-center justify-center shrink-0">
-                            <FileText size={20} className="text-green-500" />
+                <div className="flex items-center gap-4 w-full">
+                    <div className="m-8 bg-zinc-900/60 border w-[50%] border-white/[0.07] rounded-2xl p-5 flex items-center gap-4 justify-between text-sm text-white/60">
+                        <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-xl bg-green-500/8 border border-green-500/15 flex items-center justify-center shrink-0">
+                                <FileText size={20} className="text-green-500" />
+                            </div>
+
+                            <div>
+                                <p className="text-sm font-semibold">Download as PDF</p>
+                                <p className="text-xs text-zinc-600 mt-0.5">
+                                    {isPro
+                                        ? "Export this summary as a clean, shareable PDF"
+                                        : "Upgrade to Pro to export summaries as PDF"
+                                    }
+                                </p>
+                            </div>
+
                         </div>
 
-                        <div>
-                            <p className="text-sm font-semibold">Download as PDF</p>
-                            <p className="text-xs text-zinc-600 mt-0.5">
-                                {isPro
-                                    ? "Export this summary as a clean, shareable PDF"
-                                    : "Upgrade to Pro to export summaries as PDF"
-                                }
-                            </p>
-                        </div>
+                        {isPro ? (
+                            <button 
+                                onClick={handleDownloadPDF}
+                                disabled={downloading}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-black text-sm font-bold border-none cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(34,197,94,0.25)] disabled:opacity-60 disabled:translate-y-0 shrink-0"
+                            >
+                                {downloading ? (
+                                    <>
+                                        <Loader2 size={14} className="animate-spin" />
+                                        Generating...
+                                    </>
+                                    ) : (
+                                    <>
+                                        <Download size={14} />
+                                        Download PDF
+                                    </>
+                                )}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => router.push("/pricing")}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-black text-sm font-bold border-none cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(34,197,94,0.25)] shrink-0"
+                            >
+                                <Lock size={13} />
+                                Upgrade to Pro
+                                
+                            </button>
+                        )}
                     </div>
 
-                    {isPro ? (
-                        <button 
-                            onClick={handleDownloadPDF}
-                            disabled={downloading}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-black text-sm font-bold border-none cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(34,197,94,0.25)] disabled:opacity-60 disabled:translate-y-0 shrink-0"
-                        >
-                            {downloading ? (
-                                <>
-                                    <Loader2 size={14} className="animate-spin" />
-                                    Generating...
-                                </>
-                                ) : (
-                                <>
-                                    <Download size={14} />
-                                    Download PDF
-                                </>
-                            )}
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => router.push("/pricing")}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-black text-sm font-bold border-none cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(34,197,94,0.25)] shrink-0"
-                        >
-                            <Lock size={13} />
-                            Upgrade to Pro
-                            
-                        </button>
-                    )}
+                    <GenerateBoardCard summaryId={summary.id} isPro={isPro} />
                 </div>
                 
             </div>
+
+            <ChatDrawer
+                open={chatOpen}
+                onClose={() => setChatOpen(false)}
+                summaryId={summary.id}
+                summaryTitle={result.title}
+                messages={messages}
+                setMessages={setMessages}
+            />
         </div>
     )
 }

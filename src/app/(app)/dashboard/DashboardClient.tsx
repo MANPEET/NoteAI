@@ -1,5 +1,6 @@
 "use client"
 
+import { useUser } from "@/components/providers/user-provider"
 import { ArrowRight, DiamondIcon, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -32,7 +33,6 @@ interface Props {
   summaries: Summary[]
   totalActionItems: number
   usageCount: number
-  plan: "free" | "pro"
 }
 
 const FREE_LIMIT = 5
@@ -55,11 +55,12 @@ export default function DashboardClient({
   summaries,
   totalActionItems,
   usageCount,
-  plan,
 }: Props) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState<"all" | "positive" | "neutral" | "tense">("all")
+
+  const {plan} =  useUser();
 
   const isPro = plan === "pro"
   const usagePercent = Math.min((usageCount / FREE_LIMIT) * 100, 100)
@@ -76,7 +77,7 @@ export default function DashboardClient({
   })
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden m-5 h-screen rounded-2xl bg-[#09090B]">
+    <div className="flex flex-col flex-1 overflow-hidden m-5 text-white rounded-2xl bg-[#09090B]">
 
       {/* Topbar */}
         <div className="my-4.5 px-7 h-15 flex items-center justify-between border-b border-white/[0.07] shrink-0">

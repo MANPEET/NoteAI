@@ -4,23 +4,19 @@ import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export default function LoginPage() {
-  const { data: session } = useSession()
+ const { data: session, status } = useSession()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (session) router.push("/dashboard")
-  }, [session, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setError("")
 
     const result = await signIn("credentials", {
       email,
@@ -29,9 +25,10 @@ export default function LoginPage() {
     })
 
     if (result?.error) {
-      setError("Invalid email or password")
+      toast.error("Invalid email or password")
       setLoading(false)
     } else {
+      toast.success("User logged in successfully!")
       router.push("/dashboard")
     }
   }
@@ -44,11 +41,9 @@ export default function LoginPage() {
           <p className="text-gray-400 mb-8 text-center">Sign in to your NoteAI account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
-            )}
 
             <Button
+                  type="button"
                   onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                   className="w-full bg-zinc-900 text-white/80 text-md h-10 cursor-pointer hover:border-gray-400"
                   >

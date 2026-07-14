@@ -4,12 +4,14 @@ import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
 import ResultClient from "./ResultClient";
 
+
 export default async function SummaryPage({params}: {params : Promise<{ id: string }>}) {
 
     const {id} = await params;
     const session = await getServerSession(authOptions);
 
     if(!session) redirect("/login");
+
 
     const summary = await prisma.summary.findUnique({
         where: {
@@ -22,7 +24,6 @@ export default async function SummaryPage({params}: {params : Promise<{ id: stri
     return (
         <ResultClient
             summary={summary} 
-            plan={session.user.plan as "free" | "pro" }
         />
     )
 }

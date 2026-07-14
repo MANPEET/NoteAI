@@ -8,22 +8,29 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  // url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  plan          String    @default("free")
-  accounts      Account[]
-  summaries     Summary[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  otpCode           String?
+  otpExpiry         DateTime?
+  plan              String             @default("free")
+  stripeCustomerId  String?            @unique
+  accounts          Account[]
+  summaries         Summary[]
+  sessions          Session[]
+  createdAt         DateTime           @default(now())
+  boardsOwned       Board[]            @relation("BoardOwner")
+  boardMembers      BoardMember[]
+  boardParticipants BoardParticipant[]
 }
 
 model Summary {
@@ -35,6 +42,7 @@ model Summary {
   result     Json
   shareToken String?  @unique
   createdAt  DateTime @default(now())
+  boards     Board[]
 }
 
 model Session {
@@ -61,4 +69,103 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model Board {
+  id           String             @id @default(uuid())
+  title        String
+  summaryId    String?
+  summary      Summary?           @relation(fields: [summaryId], references: [id])
+  ownerId      String
+  owner        User               @relation("BoardOwner", fields: [ownerId], references: [id])
+  inviteToken  String             @unique @default(cuid())
+  columns      Column[]
+  members      BoardMember[]
+  participants BoardParticipant[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model Column {
+  id      String @id @default(uuid())
+  name    String
+  order   Int
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards   Card[]
+
+  @@index([boardId])
+}
+
+model Card {
+  id          String         @id @default(uuid())
+  column      Column?        @relation(fields: [columnId], references: [id])
+  columnId    String
+  title       String
+  description String?        @db.Text
+  createdById String?
+  updatedById String?
+  dueDate     DateTime?
+  order       Int
+  assignees   CardAssignee[]
+  checklist   Checklist[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Checklist {
+  id        String    @id @default(cuid())
+  title     String
+  cardId    String
+  card      Card?     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items     Subtask[]
+  createdAt DateTime  @default(now())
+}
+
+model Subtask {
+  id          String     @id @default(cuid())
+  text        String
+  completed   Boolean    @default(false)
+  order       Int        @default(0)
+  checklistId String
+  checklist   Checklist? @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+}
+
+model BoardParticipant {
+  id              String         @id @default(cuid())
+  boardId         String
+  board           Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  name            String
+  claimedBy       String?
+  user            User?          @relation(fields: [claimedBy], references: [id])
+  cardAssignments CardAssignee[]
+
+  @@unique([boardId, name])
+}
+
+model CardAssignee {
+  id            String           @id @default(cuid())
+  cardId        String
+  card          Card             @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   BoardParticipant @relation(fields: [participantId], references: [id])
+
+  @@unique([cardId, participantId])
+}
+
+model BoardMember {
+  id      String    @id @default(cuid())
+  boardId String
+  board   Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User      @relation(fields: [userId], references: [id])
+  role    BoardRole @default(MEMBER)
+
+  @@unique([boardId, userId])
+}
+
+enum BoardRole {
+  MEMBER
+  ADMIN
 }

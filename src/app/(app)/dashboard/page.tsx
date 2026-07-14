@@ -2,9 +2,11 @@ import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 import { usageCount } from "@/lib/usage";
 import  DashboardClient  from "./DashboardClient";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     const [summaries, totalActionItems, count] = await Promise.all([
         prisma.summary.findMany({
@@ -31,11 +33,9 @@ export default async function DashboardPage() {
 
         usageCount(session!.user?.id)
     ])
-
     return <DashboardClient
         summaries = {summaries}
         totalActionItems = {totalActionItems}
         usageCount = {count}
-        plan = {session?.user.plan as "free"| "pro"}
     />
 }
